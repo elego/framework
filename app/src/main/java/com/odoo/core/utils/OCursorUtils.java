@@ -20,8 +20,12 @@
 package com.odoo.core.utils;
 
 import android.database.Cursor;
+import android.database.MatrixCursor;
 
 import com.odoo.core.orm.ODataRow;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class OCursorUtils {
     public static final String TAG = OCursorUtils.class.getSimpleName();
@@ -32,6 +36,33 @@ public class OCursorUtils {
             row.put(col, OCursorUtils.cursorValue(col, cr));
         }
         return row;
+    }
+
+    public static Cursor toCursor(List<ODataRow> records) {
+        if (records.isEmpty()) {
+            return null;
+        }
+
+        ODataRow firstRow = records.get(0);
+        String columnNames[] = firstRow.keys().toArray(new String[0]);
+        MatrixCursor cursor = new MatrixCursor(columnNames);
+
+        for (ODataRow record : records) {
+            List<Object> row = new ArrayList<>();
+
+            for (String columnName : columnNames) {
+                Object value = record.get(columnName);
+
+                if (value == null) {
+                    throw new IllegalArgumentException(
+                            "The given records all have to be of the same type");
+                }
+
+                row.add(value);
+            }
+            cursor.addRow(row.toArray());
+        }
+        return cursor;
     }
 
     public static Object cursorValue(String column, Cursor cr) {
