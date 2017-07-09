@@ -30,7 +30,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,6 +44,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.vision.barcode.Barcode;
+import com.odoo.R;
 import com.odoo.core.orm.ODataRow;
 import com.odoo.core.orm.OM2ORecord;
 import com.odoo.core.orm.OModel;
@@ -83,6 +84,7 @@ public class OSelectionField extends LinearLayout implements IOControlData,
     private int appearance = -1;
     private int textColor = Color.BLACK;
     private OForm formView;
+    private String mBarcodeColumn;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public OSelectionField(Context context, AttributeSet attrs,
@@ -336,8 +338,14 @@ public class OSelectionField extends LinearLayout implements IOControlData,
                             if (mValue instanceof OM2ORecord) {
                                 row = ((OM2ORecord) mValue).browse();
                                 row_id = row.getInt(OColumn.ROW_ID);
-                            } else
+                            } else if (mValue instanceof Barcode) {
+                                String barcode = ((Barcode) mValue).rawValue;
+                                String selection = mBarcodeColumn + " = ?";
+                                row = mModel.browse(null, selection, new String[]{barcode});
+                                row_id = row.getInt(OColumn.ROW_ID);
+                            } else {
                                 row_id = (Integer) mValue;
+                            }
                             int index = 0;
                             for (int i = 0; i < items.size(); i++) {
                                 if (items.get(i).getInt(OColumn.ROW_ID) == row_id) {
@@ -360,19 +368,28 @@ public class OSelectionField extends LinearLayout implements IOControlData,
                                 row = ((OM2ORecord) mValue).browse();
                             else if (mValue instanceof Integer)
                                 row = getRecordData((Integer) mValue);
+                            else if (mValue instanceof Barcode) {
+                                String barcode = ((Barcode) mValue).rawValue;
+                                String selection = mBarcodeColumn + " = ?";
+                                row = mRelModel.browse(null, selection, new String[]{barcode});
+                            }
                         }
-                        if (row != null)
+
+                        if (row != null) {
                             if (mRelModel != null) {
                                 txvView.setText(row.getString(mRelModel.getDefaultNameColumn()));
                             } else {
                                 txvView.setText(row.getString(mModel.getDefaultNameColumn()));
                             }
+                        } else {
+                            Toast.makeText(mContext, R.string.toast_barcode_no_item,
+                                    Toast.LENGTH_LONG).show();
+                        }
+
                         if (txvView.getTag() != null) {
                             AlertDialog dialog = (AlertDialog) txvView.getTag();
                             dialog.dismiss();
                         }
-                        break;
-                    default:
                         break;
                 }
             } else {
@@ -392,6 +409,12 @@ public class OSelectionField extends LinearLayout implements IOControlData,
                         row_id = row.getInt(OColumn.ROW_ID);
                     } else if (mValue instanceof Integer)
                         row_id = (Integer) mValue;
+                    else if (mValue instanceof Barcode) {
+                        String barcode = ((Barcode) mValue).rawValue;
+                        String selection = mBarcodeColumn + " = ?";
+                        ODataRow record = mRelModel.browse(null, selection, new String[]{barcode});
+                        row_id = record.getInt(OColumn.ROW_ID);
+                    }
                     int index = 0;
                     for (int i = 0; i < items.size(); i++) {
                         if (items.get(i).getInt(OColumn.ROW_ID) == row_id) {
@@ -497,6 +520,11 @@ public class OSelectionField extends LinearLayout implements IOControlData,
         if (mCol != null && mModel != null) {
             mRelModel = mModel.createInstance(mCol.getType());
         }
+    }
+
+    @Override
+    public void setBarcodeColumn(String barcodeColumn) {
+        mBarcodeColumn = barcodeColumn;
     }
 
     private ODataRow getRecordData(int row_id) {

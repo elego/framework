@@ -256,6 +256,9 @@ public class OBooleanField extends LinearLayout implements IOControlData,
     }
 
     @Override
+    public void setBarcodeColumn(String column) { /* Not used */ }
+
+    @Override
     public void setValueUpdateListener(ValueUpdateListener listener) {
         mValueUpdateListener = listener;
     }

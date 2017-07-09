@@ -20,10 +20,14 @@
 package odoo.controls;
 
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Build;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -35,6 +39,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.vision.barcode.Barcode;
 import com.odoo.R;
 import com.odoo.core.orm.ODataRow;
 import com.odoo.core.orm.OModel;
@@ -71,6 +76,8 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
     private IOnDomainFilterCallbacks mOnDomainFilterCallbacks = null;
     private float mWidgetImageSize = -1;
     private Boolean withPadding = true;
+    private String mBarcodeColumn;
+    private int mBarcodeFormat = -1;
     // Controls
     private OForm parentForm;
     private IOControlData mControlData = null;
@@ -179,6 +186,8 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
             show_label = types.getBoolean(R.styleable.OField_showLabel, true);
             int type_value = types.getInt(R.styleable.OField_fieldType, 0);
             mType = FieldType.getTypeValue(type_value);
+            mBarcodeColumn = types.getString(R.styleable.OField_barcodeColumn);
+            mBarcodeFormat = types.getInt(R.styleable.OField_barcodeFormat, -1);
 
             with_bottom_padding = types.getBoolean(
                     R.styleable.OField_withBottomPadding, true);
@@ -282,11 +291,9 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
             default:
                 return;
         }
-        mControlData.setValueUpdateListener(this);
-        mControlData.setEditable(getEditable());
-        mControlData.initControl();
-        mControlData.setValue(mValue);
         container.addView(controlView);
+        mControlData.setValueUpdateListener(this);
+        updateControl();
     }
 
     public <T> T getFieldView() {
@@ -397,29 +404,49 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
 
     public void setEditable(Boolean editable) {
         mEditable = editable;
-        if (mControlData != null) {
-            Object value = getValue();
-            mControlData.setEditable(editable);
-            mControlData.initControl();
-            if (value != null)
-                mControlData.setValue(value);
-        }
+        updateControl();
+    }
+
+    public void setReadonly(boolean readonly) {
+        mReadonly = readonly;
+        updateControl();
     }
 
     public boolean getEditable() {
         return mEditable && !mReadonly;
     }
 
-    public void setReadonly(boolean readonly) {
-        mReadonly = readonly;
+    private void updateControl() {
         if (mControlData != null) {
             Object value = getValue();
-            mControlData.setReadonly(mReadonly);
+            mControlData.setEditable(mEditable);
             mControlData.initControl();
             if (value != null) {
                 mControlData.setValue(value);
             }
+
+            if (getBarcodeEnabled() && getEditable()) {
+                ImageView barcodeButton = (ImageView) findViewById(R.id.barcode_scanner_button);
+                barcodeButton.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startBarcodeScannerActivity();
+                    }
+                });
+                barcodeButton.setVisibility(View.VISIBLE);
+            }
         }
+    }
+
+    public boolean getBarcodeEnabled() {
+        if (mControlData != null) {
+            if (mControlData instanceof OSelectionField) {
+                return mBarcodeColumn != null && mBarcodeFormat >= 0;
+            } else if (mControlData instanceof OEditTextField) {
+                return mBarcodeFormat >= 0;
+            }
+        }
+        return false;
     }
 
     public String getFieldName() {
@@ -464,6 +491,7 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
         selection.setArrayResourceId(mValueArrayId);
         selection.setColumn(mColumn);
         selection.setWidgetType(mWidgetType);
+        selection.setBarcodeColumn(mBarcodeColumn);
         return selection;
     }
 
@@ -596,6 +624,23 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
             setVisibility(View.GONE);
         }
     }
+
+    private void startBarcodeScannerActivity() {
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(mContext);
+        Intent intent = new Intent(mContext, BarcodeScannerActivity.class);
+        intent.putExtra("barcode_format", mBarcodeFormat);
+        broadcastManager.registerReceiver(barcodeReceiver, new IntentFilter("barcode_entered_detected"));
+        mContext.startActivity(intent);
+    }
+
+    BroadcastReceiver barcodeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            LocalBroadcastManager.getInstance(mContext).unregisterReceiver(barcodeReceiver);
+            Barcode barcode = (Barcode) intent.getExtras().get("barcode");
+            mControlData.setValue(barcode);
+        }
+    };
 
     /**
      * OnChange CallBack for column

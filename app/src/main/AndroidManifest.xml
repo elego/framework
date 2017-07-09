@@ -28,6 +28,11 @@
         android:icon="@mipmap/ic_launcher"
         android:largeHeap="true"
         android:theme="@style/AppTheme">
+
+        <meta-data
+            android:name="com.google.android.gms.vision.DEPENDENCIES"
+            android:value="barcode"/>
+
         <activity
             android:name="com.odoo.core.account.OdooLogin"
             android:label="${applicationName}"
@@ -42,6 +47,7 @@
         <activity
             android:name="com.odoo.OdooActivity"
             android:label="${applicationName}" />
+        <activity android:name="odoo.controls.BarcodeScannerActivity" />
         <activity android:name="odoo.controls.SearchableItemActivity" />
         <activity android:name="com.odoo.SettingsActivity" />
         <activity

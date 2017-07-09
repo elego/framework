@@ -40,6 +40,8 @@ interface IOControlData {
 
     void setColumn(OColumn column);
 
+    void setBarcodeColumn(String barcodeColumn);
+
     void initControl();
 
     String getLabel();

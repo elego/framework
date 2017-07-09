@@ -31,6 +31,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.vision.barcode.Barcode;
 import com.odoo.core.orm.fields.OColumn;
 import com.odoo.core.utils.ODateUtils;
 
@@ -139,6 +140,8 @@ public class OEditTextField extends LinearLayout implements IOControlData,
             value = "";
         } else if (mWidget == OField.WidgetType.Duration) {
             value = ODateUtils.floatToDuration(value.toString());
+        } else if (value instanceof Barcode) {
+            value = ((Barcode) value).rawValue;
         }
         if (isEditable()) {
             edtText.setText(value.toString());
@@ -214,6 +217,9 @@ public class OEditTextField extends LinearLayout implements IOControlData,
     public void setColumn(OColumn column) {
         mColumn = column;
     }
+
+    @Override
+    public void setBarcodeColumn(String column) { /* Not used */ }
 
     @Override
     public String getLabel() {
