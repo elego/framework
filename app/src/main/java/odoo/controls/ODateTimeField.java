@@ -31,6 +31,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.vision.barcode.Barcode;
 import com.odoo.core.orm.fields.OColumn;
 import com.odoo.core.utils.ODateUtils;
 
@@ -125,11 +126,14 @@ public class ODateTimeField extends LinearLayout implements IOControlData,
 
     @Override
     public void setValue(Object value) {
-        mValue = value;
         if (value == null || value.toString().equals("false")) {
             txvText.setText("No Value");
             return;
+        } else if (value instanceof Barcode) {
+            // Not supported
+            return;
         }
+        mValue = value;
         txvText.setText(getDate(mValue.toString(), mParsePattern));
         if (mValueUpdateListener != null) {
             mValueUpdateListener.onValueUpdate(value);
@@ -179,6 +183,9 @@ public class ODateTimeField extends LinearLayout implements IOControlData,
     public void setColumn(OColumn column) {
         mColumn = column;
     }
+
+    @Override
+    public void setBarcodeColumn(String column) { /* Not used */ }
 
     @Override
     public String getLabel() {

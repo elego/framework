@@ -52,6 +52,23 @@
         <attr name="fieldLabelColor" format="color" />
         <attr name="fieldLabelTextAppearance" format="reference" />
         <attr name="fieldLabelSize" format="dimension" />
+        <attr name="barcodeColumn" format="string" />
+        <attr name="barcodeFormat">
+            <flag name="AllFormats" value="0" />
+            <flag name="Code128" value="1" />
+            <flag name="Code39" value="2" />
+            <flag name="Code93" value="4" />
+            <flag name="Codabar" value="8" />
+            <flag name="DataMatrix" value="16" />
+            <flag name="Ean13" value="32" />
+            <flag name="Ean8" value="64" />
+            <flag name="Itf" value="128" />
+            <flag name="QrCode" value="256" />
+            <flag name="UpcA" value="512" />
+            <flag name="UpcE" value="1024" />
+            <flag name="Pdf417" value="2048" />
+            <flag name="Aztec" value="4096" />
+        </attr>
     </declare-styleable>
     <declare-styleable name="OForm">
         <attr name="editableMode" format="boolean" />

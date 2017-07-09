@@ -16,4 +16,8 @@
     <string name="toast_permission_download_storage_help">Storage permission required to store downloaded files on sdcard of your phone. Please grant permission for use this feature</string>
     <string name="confirm_are_you_sure_want_to_delete">Are you sure want to delete ?</string>
     <string name="toast_record_deleted">Record deleted</string>
+    <string name="hint_barcode_input">Manual barcode input</string>
+    <string name="toast_barcode_no_item">Cannot find item for given barcode</string>
+    <string name="button_cancel">Cancel Button</string>
+    <string name="button_enter">Enter Button</string>
 </resources>
