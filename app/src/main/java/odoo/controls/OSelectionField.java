@@ -415,8 +415,8 @@ public class OSelectionField extends LinearLayout implements IOControlData,
                     }
                 }
             }
-            if (!row.getString(mModel.getDefaultNameColumn()).equals("false"))
-                txvView.setText(row.getString(mModel.getDefaultNameColumn()));
+            if (!row.getString(mRelModel.getDefaultNameColumn()).equals("false"))
+                txvView.setText(row.getString(mRelModel.getDefaultNameColumn()));
         }
         if (isEditable() && mValueUpdateListener != null) {
             if (mValue instanceof Integer && (int) mValue == -1) return;
