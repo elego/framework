@@ -59,7 +59,7 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
     private OModel mModel = null;
     private String mLabel, mField_name;
     private Object mValue = null;
-    private boolean mEditable = false, showIcon = true, show_label = true;
+    private boolean mEditable = false, mReadonly = false, showIcon = true, show_label = true;
     private TextView label_view = null;
     private int resId, tint_color = Color.BLACK, mValueArrayId = -1;
     private ImageView img_icon = null;
@@ -174,6 +174,7 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
             mField_name = types.getString(R.styleable.OField_fieldName);
             resId = types.getResourceId(R.styleable.OField_iconResource, 0);
             showIcon = types.getBoolean(R.styleable.OField_showIcon, true);
+            mReadonly = types.getBoolean(R.styleable.OField_readonly, false);
             tint_color = types.getColor(R.styleable.OField_iconTint, 0);
             show_label = types.getBoolean(R.styleable.OField_showLabel, true);
             int type_value = types.getInt(R.styleable.OField_fieldType, 0);
@@ -406,7 +407,19 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
     }
 
     public boolean getEditable() {
-        return mEditable;
+        return mEditable && !mReadonly;
+    }
+
+    public void setReadonly(boolean readonly) {
+        mReadonly = readonly;
+        if (mControlData != null) {
+            Object value = getValue();
+            mControlData.setReadonly(mReadonly);
+            mControlData.initControl();
+            if (value != null) {
+                mControlData.setValue(value);
+            }
+        }
     }
 
     public String getFieldName() {
@@ -417,8 +430,9 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
     private View initTextControl() {
         setOrientation(VERTICAL);
         OEditTextField edt = new OEditTextField(mContext);
-        edt.setWidgetType(mWidgetType);
         mControlData = edt;
+        edt.setReadonly(mReadonly);
+        edt.setWidgetType(mWidgetType);
         edt.setResource(textSize, textAppearance, textColor);
         edt.setColumn(mColumn);
         edt.setHint(mLabel);
@@ -429,6 +443,7 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
     private View initBooleanControl() {
         OBooleanField bool = new OBooleanField(mContext);
         mControlData = bool;
+        bool.setReadonly(mReadonly);
         bool.setResource(textSize, textAppearance, textColor);
         bool.setColumn(mColumn);
         bool.setEditable(getEditable());
@@ -440,8 +455,9 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
     // Selection, Searchable, SearchableLive
     private View initSelectionWidget() {
         OSelectionField selection = new OSelectionField(mContext);
-        selection.setFormView(parentForm);
         mControlData = selection;
+        selection.setReadonly(mReadonly);
+        selection.setFormView(parentForm);
         selection.setResource(textSize, textAppearance, textColor);
         selection.setLabelText(getLabelText());
         selection.setModel(mModel);
@@ -455,6 +471,7 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
     private View initDateTimeControl(FieldType type) {
         ODateTimeField datetime = new ODateTimeField(mContext);
         mControlData = datetime;
+        datetime.setReadonly(mReadonly);
         datetime.setResource(textSize, textAppearance, textColor);
         datetime.setFieldType(type);
         datetime.setParsePattern(mParsePattern);
@@ -467,6 +484,7 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
     private View initBlobControl() {
         OBlobField blob = new OBlobField(mContext);
         mControlData = blob;
+        blob.setReadonly(mReadonly);
         blob.setDefaultImage(defaultImage);
         blob.setImageSize(mWidgetImageSize);
         blob.setLabelText(getLabelText());
@@ -545,7 +563,7 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
         if (value instanceof ODataRow) {
             mValue = ((ODataRow) value).get(OColumn.ROW_ID);
         }
-        if (mEditable) {
+        if (getEditable()) {
             if (mControlData.isControlReady()) {
                 ODataRow row = new ODataRow();
                 if (mOnChangeCallback != null

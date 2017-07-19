@@ -41,7 +41,7 @@ public class OEditTextField extends LinearLayout implements IOControlData,
     private Context mContext;
     private EditText edtText;
     private TextView txvText;
-    private Boolean mEditable = false, mReady = false;
+    private Boolean mEditable = false, mReadonly = false, mReady = false;
     private OField.WidgetType mWidget = null;
     private OColumn mColumn;
     private String mLabel, mHint;
@@ -90,7 +90,7 @@ public class OEditTextField extends LinearLayout implements IOControlData,
                 LayoutParams.WRAP_CONTENT);
         removeAllViews();
         setOrientation(VERTICAL);
-        if (mEditable) {
+        if (isEditable()) {
             edtText = new EditText(mContext);
             edtText.setTypeface(OControlHelper.lightFont());
             edtText.setLayoutParams(params);
@@ -140,7 +140,7 @@ public class OEditTextField extends LinearLayout implements IOControlData,
         } else if (mWidget == OField.WidgetType.Duration) {
             value = ODateUtils.floatToDuration(value.toString());
         }
-        if (mEditable) {
+        if (isEditable()) {
             edtText.setText(value.toString());
         } else {
             txvText.setText(value.toString());
@@ -152,7 +152,7 @@ public class OEditTextField extends LinearLayout implements IOControlData,
 
     @Override
     public View getFieldView() {
-        if (mEditable)
+        if (isEditable())
             return edtText;
         return txvText;
     }
@@ -160,7 +160,7 @@ public class OEditTextField extends LinearLayout implements IOControlData,
 
     @Override
     public void setError(String error) {
-        if (mEditable) {
+        if (isEditable()) {
             edtText.setError(error);
         }
     }
@@ -168,7 +168,7 @@ public class OEditTextField extends LinearLayout implements IOControlData,
     @Override
     public Object getValue() {
         Object value = null;
-        if (mEditable)
+        if (isEditable())
             value = edtText.getText().toString();
         else if (txvText != null)
             value = txvText.getText().toString();
@@ -180,14 +180,17 @@ public class OEditTextField extends LinearLayout implements IOControlData,
 
     @Override
     public void setEditable(Boolean editable) {
-        if (mEditable != editable) {
-            mEditable = editable;
-        }
+        mEditable = editable;
     }
 
     @Override
     public Boolean isEditable() {
-        return mEditable;
+        return mEditable && !mReadonly;
+    }
+
+    @Override
+    public void setReadonly(Boolean readonly) {
+        mReadonly = readonly;
     }
 
     public void setInputType(int type) {

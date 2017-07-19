@@ -41,7 +41,7 @@ public class OBooleanField extends LinearLayout implements IOControlData,
 
     private Context mContext;
     private OColumn mColumn;
-    private Boolean mEditable = false;
+    private Boolean mEditable = false, mReadonly = false;
     private String mLabel = null;
     private Boolean mValue = false;
     private OField.WidgetType mWidget = null;
@@ -212,7 +212,12 @@ public class OBooleanField extends LinearLayout implements IOControlData,
 
     @Override
     public Boolean isEditable() {
-        return mEditable;
+        return mEditable && !mReadonly;
+    }
+
+    @Override
+    public void setReadonly(Boolean readonly) {
+        mReadonly = readonly;
     }
 
     public void setWidgetType(OField.WidgetType type) {

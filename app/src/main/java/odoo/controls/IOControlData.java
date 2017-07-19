@@ -34,6 +34,8 @@ interface IOControlData {
 
     Boolean isEditable();
 
+    void setReadonly(Boolean readonly);
+
     void setLabelText(String label);
 
     void setColumn(OColumn column);
