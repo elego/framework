@@ -44,7 +44,7 @@ public class ODateTimeField extends LinearLayout implements IOControlData,
 
 
     private Context mContext;
-    private Boolean mEditable = false;
+    private Boolean mEditable = false, mReadonly = false;
     private OColumn mColumn;
     private String mLabel, mHint;
     private ValueUpdateListener mValueUpdateListener = null;
@@ -160,14 +160,17 @@ public class ODateTimeField extends LinearLayout implements IOControlData,
 
     @Override
     public void setEditable(Boolean editable) {
-        if (mEditable != editable) {
-            mEditable = editable;
-        }
+        mEditable = editable;
     }
 
     @Override
     public Boolean isEditable() {
-        return mEditable;
+        return mEditable && !mReadonly;
+    }
+
+    @Override
+    public void setReadonly(Boolean readonly) {
+        mReadonly = readonly;
     }
 
     @Override

@@ -64,7 +64,7 @@ public class OSelectionField extends LinearLayout implements IOControlData,
 
     private Context mContext;
     private Object mValue = null;
-    private Boolean mEditable = false;
+    private Boolean mEditable = false, mReadonly = false;
     private OField.WidgetType mWidget = null;
     private Integer mResourceArray = null;
     private OColumn mCol;
@@ -462,7 +462,12 @@ public class OSelectionField extends LinearLayout implements IOControlData,
 
     @Override
     public Boolean isEditable() {
-        return mEditable;
+        return mEditable && !mReadonly;
+    }
+
+    @Override
+    public void setReadonly(Boolean readonly) {
+        mReadonly = readonly;
     }
 
     public void setWidgetType(OField.WidgetType type) {

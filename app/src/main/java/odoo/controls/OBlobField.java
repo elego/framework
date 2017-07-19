@@ -33,7 +33,7 @@ public class OBlobField extends LinearLayout implements IOControlData {
     public static final String TAG = OBlobField.class.getSimpleName();
 
     private Context mContext;
-    private Boolean mReady = false, isEditable = false;
+    private Boolean mReady = false, isEditable = false, mReadonly = false;
     private ValueUpdateListener mValueUpdateListener = null;
     private String mLabel;
     private OColumn mCol;
@@ -130,7 +130,12 @@ public class OBlobField extends LinearLayout implements IOControlData {
 
     @Override
     public Boolean isEditable() {
-        return isEditable;
+        return isEditable && !mReadonly;
+    }
+
+    @Override
+    public void setReadonly(Boolean readonly) {
+        mReadonly = readonly;
     }
 
     @Override
