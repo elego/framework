@@ -21,16 +21,42 @@ package com.odoo.base.addons.res;
 
 import android.content.Context;
 
+import com.odoo.core.orm.ODataRow;
+import com.odoo.core.orm.OM2MRecord;
 import com.odoo.core.orm.OModel;
 import com.odoo.core.orm.fields.OColumn;
 import com.odoo.core.orm.fields.types.OVarchar;
 import com.odoo.core.support.OUser;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@SuppressWarnings("unused")
 public class ResUsers extends OModel {
     public static final String TAG = ResUsers.class.getSimpleName();
 
-    OColumn name = new OColumn("Name", OVarchar.class);
-    OColumn login = new OColumn("User Login name", OVarchar.class);
+    public static final String COLUMN_NAME = "name";
+    OColumn name = new OColumn("Name", OVarchar.class)
+            .setName(COLUMN_NAME);
+
+    public static final String COLUMN_LOGIN = "login";
+    OColumn login = new OColumn("User Login name", OVarchar.class)
+            .setName(COLUMN_LOGIN);
+
+    public static final String COLUMN_GROUPS_ID = "groups_id";
+    OColumn group_id = new OColumn("Groups", ResGroups.class,
+            OColumn.RelationType.ManyToMany)
+            .setName(COLUMN_GROUPS_ID)
+            .setRelTableName("res_groups_users_rel")
+            .setRelBaseColumn("uid")
+            .setRelRelationColumn("gid");
+
+
+    public ResUsers(Context context, OUser user) {
+        super(context, "res.users", user);
+    }
 
     @Override
     public boolean allowCreateRecordOnServer() {
@@ -47,12 +73,24 @@ public class ResUsers extends OModel {
         return false;
     }
 
-    public ResUsers(Context context, OUser user) {
-        super(context, "res.users", user);
-    }
-
     public static int myId(Context context) {
         ResUsers users = new ResUsers(context, null);
         return users.selectRowId(users.getUser().getUserId());
+    }
+
+    public static Set<String> getCurrentUserGroupNames(Context context) {
+        ResUsers users = new ResUsers(context, null);
+        ODataRow record = users.browse(users.getUser().getUserId());
+        List<ODataRow> groups = record.getM2MRecord(COLUMN_GROUPS_ID).browseEach();
+        Set<String> names = new HashSet<>();
+
+        for (ODataRow group : groups) {
+            String name = group.getString(COLUMN_NAME);
+            if (name != null) {
+                names.add(name);
+            }
+        }
+
+        return names;
     }
 }

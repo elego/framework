@@ -21,6 +21,7 @@ import com.odoo.App;
 import com.odoo.OdooActivity;
 import com.odoo.R;
 import com.odoo.base.addons.res.ResCompany;
+import com.odoo.base.addons.res.ResUsers;
 import com.odoo.config.FirstLaunchConfig;
 import com.odoo.core.auth.OdooAccountManager;
 import com.odoo.core.auth.OdooAuthenticator;
@@ -372,6 +373,18 @@ public class OdooLogin extends AppCompatActivity implements View.OnClickListener
                 mUser = OdooAccountManager.getDetails(OdooLogin.this, mUser.getAndroidName());
                 OdooAccountManager.login(OdooLogin.this, mUser.getAndroidName());
                 FirstLaunchConfig.onFirstLaunch(OdooLogin.this, mUser);
+
+                try {
+                    // Syncing user details
+                    ODataRow user_details = new ODataRow();
+                    user_details.put("id", mUser.getUserId());
+                    ResUsers user = new ResUsers(OdooLogin.this, mUser);
+                    user.quickCreateRecord(user_details);
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
                 try {
                     // Syncing company details
                     ODataRow company_details = new ODataRow();
@@ -382,6 +395,7 @@ public class OdooLogin extends AppCompatActivity implements View.OnClickListener
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
                 return true;
             }
             return false;

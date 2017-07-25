@@ -38,8 +38,10 @@ import android.widget.TextView;
 import com.odoo.App;
 import com.odoo.OdooActivity;
 import com.odoo.R;
+import com.odoo.base.addons.res.ResUsers;
 import com.odoo.core.auth.OdooAccountManager;
 import com.odoo.core.rpc.Odoo;
+import com.odoo.core.rpc.helper.ODomain;
 import com.odoo.core.service.OSyncAdapter;
 import com.odoo.core.support.OUser;
 import com.odoo.core.utils.BitmapUtils;
@@ -170,6 +172,11 @@ public class OdooAccountQuickManage extends AppCompatActivity implements View.On
                 odoo = OSyncAdapter.createOdooInstance(OdooAccountQuickManage.this,
                         (com.odoo.core.support.OUser) user);
             }
+
+            ResUsers userModel = new ResUsers(getApplicationContext(), null);
+            ODomain userDomain = new ODomain().add("id", "=", user.getUserId());
+            userModel.quickSyncRecords(userDomain);
+
             return odoo.authenticate(user.getUsername(), user.getPassword(), user.getDatabase());
         }
 
