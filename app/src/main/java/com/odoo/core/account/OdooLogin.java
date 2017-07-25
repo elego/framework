@@ -491,6 +491,8 @@ public class OdooLogin extends AppCompatActivity implements View.OnClickListener
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+                return true;
             }
             return false;
         }
