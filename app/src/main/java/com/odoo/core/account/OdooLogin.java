@@ -23,12 +23,14 @@ import com.odoo.App;
 import com.odoo.OdooActivity;
 import com.odoo.R;
 import com.odoo.base.addons.res.ResCompany;
+import com.odoo.base.addons.res.ResUsers;
 import com.odoo.config.FirstLaunchConfig;
 import com.odoo.core.auth.OdooAccountManager;
 import com.odoo.core.auth.OdooAuthenticator;
 import com.odoo.core.orm.ODataRow;
 import com.odoo.core.rpc.Odoo;
 import com.odoo.core.rpc.handler.OdooVersionException;
+import com.odoo.core.rpc.helper.ODomain;
 import com.odoo.core.rpc.listeners.IDatabaseListListener;
 import com.odoo.core.rpc.listeners.IOdooConnectionListener;
 import com.odoo.core.rpc.listeners.IOdooLoginCallback;
@@ -78,6 +80,7 @@ public class OdooLogin extends AppCompatActivity implements View.OnClickListener
                 setResult(RESULT_CANCELED);
             }
         }
+        mLoginProcessStatus = (TextView) findViewById(R.id.login_process_status);
         if (!mCreateAccountRequest) {
             if (OdooAccountManager.anyActiveUser(this)) {
                 startOdooActivity();
@@ -91,7 +94,6 @@ public class OdooLogin extends AppCompatActivity implements View.OnClickListener
     }
 
     private void init() {
-        mLoginProcessStatus = (TextView) findViewById(R.id.login_process_status);
         TextView mTermsCondition = (TextView) findViewById(R.id.termsCondition);
         mTermsCondition.setMovementMethod(LinkMovementMethod.getInstance());
         findViewById(R.id.btnLogin).setOnClickListener(this);
@@ -103,7 +105,7 @@ public class OdooLogin extends AppCompatActivity implements View.OnClickListener
     }
 
     private void startOdooActivity() {
-        startActivity(new Intent(this, OdooActivity.class));
+        startActivity(new Intent(OdooLogin.this, OdooActivity.class));
         finish();
     }
 
@@ -366,7 +368,7 @@ public class OdooLogin extends AppCompatActivity implements View.OnClickListener
     @Override
     public void onUserSelected(OUser user) {
         OdooAccountManager.login(this, user.getAndroidName());
-        startOdooActivity();
+        new AccountUpdater().execute();
     }
 
     @Override
@@ -473,17 +475,22 @@ public class OdooLogin extends AppCompatActivity implements View.OnClickListener
                 mUser = OdooAccountManager.getDetails(OdooLogin.this, mUser.getAndroidName());
                 OdooAccountManager.login(OdooLogin.this, mUser.getAndroidName());
                 FirstLaunchConfig.onFirstLaunch(OdooLogin.this, mUser);
+
                 try {
+                    ResUsers userModel = new ResUsers(getApplicationContext(), null);
+                    ODomain userDomain = new ODomain().add("id", "=", mUser.getUserId());
+                    userModel.quickSyncRecords(userDomain);
+
                     // Syncing company details
                     ODataRow company_details = new ODataRow();
                     company_details.put("id", mUser.getCompanyId());
                     ResCompany company = new ResCompany(OdooLogin.this, mUser);
                     company.quickCreateRecord(company_details);
-                    Thread.sleep(500);
+
+                    return true;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                return true;
             }
             return false;
         }
@@ -505,6 +512,44 @@ public class OdooLogin extends AppCompatActivity implements View.OnClickListener
                     }
                 }
             }, 1500);
+        }
+    }
+
+    private class AccountUpdater extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected void onPreExecute() {
+            findViewById(R.id.controls).setVisibility(View.GONE);
+            findViewById(R.id.login_progress).setVisibility(View.VISIBLE);
+            mLoginProcessStatus.setText("Updating permissions..." /*OResource.string(OdooLogin.this, */);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                ResUsers userModel = new ResUsers(OdooLogin.this, null);
+                ODomain userDomain = new ODomain().add("id", "=", userModel.getUser().getUserId());
+                userModel.quickSyncRecords(userDomain);
+
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return false;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success) {
+                mLoginProcessStatus.setText(OResource.string(OdooLogin.this, R.string.status_redirecting));
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        startOdooActivity();
+                    }
+                }, 500);
+            }
         }
     }
 }

@@ -28,6 +28,8 @@ import android.widget.TextView;
 
 import com.odoo.R;
 import com.odoo.SettingsActivity;
+import com.odoo.base.addons.res.ResGroups;
+import com.odoo.base.addons.res.ResUsers;
 import com.odoo.config.Addons;
 import com.odoo.core.account.Profile;
 import com.odoo.core.support.addons.OAddon;
@@ -39,18 +41,28 @@ import com.odoo.core.utils.OResource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 public class DrawerUtils {
 
     public static List<ODrawerItem> getDrawerItems(Context context) {
         List<ODrawerItem> items = new ArrayList<>();
+        Set<String> userGroups = ResUsers.getCurrentUserGroupNames(context);
+
         for (OAddon addon : new Addons().getAddons()) {
             IBaseFragment frag = (IBaseFragment) addon.get();
             if (frag != null) {
                 List<ODrawerItem> menus = frag.drawerMenus(context);
-                if (menus != null) {
-                    items.addAll(menus);
+                if (menus == null) {
+                    continue;
+                }
+
+                for (ODrawerItem menu : menus) {
+                    String requiredGroup = menu.getRequiredUserGroup();
+                    if (requiredGroup == null || userGroups.contains(requiredGroup)) {
+                        items.add(menu);
+                    }
                 }
             }
         }

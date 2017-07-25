@@ -28,6 +28,7 @@ public class ODrawerItem implements Serializable {
     private static final long serialVersionUID = 1L;
     private String key = null, title = null;
     private String unique_key = null;
+    private String user_group = null;
     private Integer counter = 0, icon = 0;
     private Object instance = null;
     private Boolean mGroupTitle = false;
@@ -83,6 +84,15 @@ public class ODrawerItem implements Serializable {
 
     public Boolean isGroupTitle() {
         return mGroupTitle;
+    }
+
+    public ODrawerItem setRequiredUserGroup(String userGroup) {
+        user_group = userGroup;
+        return this;
+    }
+
+    public String getRequiredUserGroup() {
+        return user_group;
     }
 
     public ODrawerItem setExtra(Bundle bundle) {
