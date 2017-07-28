@@ -420,6 +420,7 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
         if (mControlData != null) {
             Object value = getValue();
             mControlData.setEditable(mEditable);
+            mControlData.setReadonly(mReadonly);
             mControlData.initControl();
             if (value != null) {
                 mControlData.setValue(value);
