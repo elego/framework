@@ -27,6 +27,7 @@ import android.content.IntentFilter;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Build;
+import android.support.annotation.AttrRes;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -396,17 +397,28 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
         return mEditable;
     }
 
+    public void setBarcodeFormat(@AttrRes int barcodeFormat) {
+        mBarcodeFormat = barcodeFormat;
+        updateControl();
+    }
+
+    public void setBarcodeColumn(String barcodeColumn) {
+        mBarcodeColumn = barcodeColumn;
+        updateControl();
+    }
+
     private void updateControl() {
         if (mControlData != null) {
             Object value = getValue();
             mControlData.setEditable(mEditable);
+            mControlData.setBarcodeColumn(mBarcodeColumn);
             mControlData.initControl();
             if (value != null) {
                 mControlData.setValue(value);
             }
 
+            ImageView barcodeButton = (ImageView) findViewById(R.id.barcode_scanner_button);
             if (getBarcodeEnabled() && getEditable()) {
-                ImageView barcodeButton = (ImageView) findViewById(R.id.barcode_scanner_button);
                 barcodeButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -414,6 +426,8 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
                     }
                 });
                 barcodeButton.setVisibility(View.VISIBLE);
+            } else {
+                barcodeButton.setVisibility(View.GONE);
             }
         }
     }
