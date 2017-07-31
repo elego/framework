@@ -29,7 +29,7 @@ public class ODrawerItem implements Serializable {
     private String key = null, title = null;
     private String unique_key = null;
     private String user_group = null;
-    private Integer counter = 0, icon = 0;
+    private Integer counter = 0, icon = 0, alt_icon = 0;
     private Object instance = null;
     private Boolean mGroupTitle = false;
     private Bundle mBundle = null;
@@ -57,6 +57,15 @@ public class ODrawerItem implements Serializable {
 
     public Integer getIcon() {
         return icon;
+    }
+
+    public ODrawerItem setAlternativeIcon(int alt_icon) {
+        this.alt_icon = alt_icon;
+        return this;
+    }
+
+    public Integer getAlternativeIcon() {
+        return alt_icon != 0 ? alt_icon : getIcon();
     }
 
     public ODrawerItem setCounter(int counter) {
