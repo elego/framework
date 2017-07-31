@@ -48,6 +48,13 @@ public class DrawerUtils {
 
     public static List<ODrawerItem> getDrawerItems(Context context) {
         List<ODrawerItem> items = new ArrayList<>();
+        items.addAll(addonItems(context));
+        items.addAll(baseSettingsItems(context));
+        return items;
+    }
+
+    public static List<ODrawerItem> addonItems(Context context) {
+        List<ODrawerItem> items = new ArrayList<>();
         Set<String> userGroups = ResUsers.getCurrentUserGroupNames(context);
 
         for (OAddon addon : new Addons().getAddons()) {
@@ -66,7 +73,7 @@ public class DrawerUtils {
                 }
             }
         }
-        items.addAll(DrawerUtils.baseSettingsItems(context));
+
         return items;
     }
 
