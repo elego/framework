@@ -36,6 +36,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -240,13 +241,12 @@ public class OdooActivity extends OdooCompatActivity {
                 Log.i(TAG, "Loading intent: " + instance.getClass().getCanonicalName());
                 startActivity((Intent) instance);
             }
-            if (instance instanceof Class<?>) {
+            else if (instance instanceof Class<?>) {
                 Class<?> cls = (Class<?>) instance;
                 Intent intent = null;
-                if (cls.getSuperclass().isAssignableFrom(Activity.class)) {
-                    intent = new Intent(this, cls);
-                }
-                if (cls.getSuperclass().isAssignableFrom(ActionBarActivity.class)) {
+                if (Activity.class.isAssignableFrom(cls)
+                        || ActionBarActivity.class.isAssignableFrom(cls)
+                        || AppCompatActivity.class.isAssignableFrom(cls)) {
                     intent = new Intent(this, cls);
                 }
                 if (intent != null) {
@@ -256,7 +256,7 @@ public class OdooActivity extends OdooCompatActivity {
                     return;
                 }
             }
-            if (instance instanceof Fragment) {
+            else if (instance instanceof Fragment) {
                 Log.i(TAG, "Loading fragment: " + instance.getClass().getCanonicalName());
                 OFragmentUtils.get(this, mSavedInstanceState).startFragment((Fragment) instance, false, extra);
             }
