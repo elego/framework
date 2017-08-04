@@ -1,0 +1,6 @@
+<hosts>
+    <!--
+    Add host entries here if you want to restrict the hosts the user can login to:
+    <host>https://www.odoo.com</host>
+    -->
+</hosts>
