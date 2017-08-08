@@ -43,10 +43,9 @@ public class ODataRow implements Parcelable {
     }
 
     public Integer getInt(String key) {
-        if (_data.get(key).toString().equals("false"))
+        if (!_data.containsKey(key) || _data.get(key).toString().equals("false"))
             return 0;
-        else
-            return Integer.parseInt(_data.get(key).toString());
+        return getFloat(key).intValue();
     }
 
     public Float getFloat(String key) {
@@ -75,6 +74,20 @@ public class ODataRow implements Parcelable {
 
     public OO2MRecord getO2MRecord(String key) {
         return (OO2MRecord) _data.get(key);
+    }
+
+    public ODataRow getM2ODataRow(String key) {
+        return (ODataRow) _data.get(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ODataRow> getM2MDataRows(String key) {
+        return (List<ODataRow>) _data.get(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ODataRow> getO2MDataRows(String key) {
+        return (List<ODataRow>) _data.get(key);
     }
 
     public List<Object> values() {

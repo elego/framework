@@ -25,6 +25,7 @@ import android.content.SyncResult;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.v4.content.Loader;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -39,6 +40,7 @@ import com.odoo.core.orm.fields.types.ODateTime;
 import com.odoo.core.orm.fields.types.OInteger;
 import com.odoo.core.orm.fields.types.OSelection;
 import com.odoo.core.orm.provider.BaseModelProvider;
+import com.odoo.core.live.OLiveRecordLoader;
 import com.odoo.core.rpc.helper.ODomain;
 import com.odoo.core.rpc.helper.OdooVersion;
 import com.odoo.core.rpc.listeners.IModuleInstallListener;
@@ -1088,6 +1090,10 @@ public class OModel implements ISyncServiceListener {
         return new ServerDataHelper(mContext, this, getUser());
     }
 
+    public ServerLiveDataHelper getServerLiveDataHelper() {
+        return new ServerLiveDataHelper(mContext, this, getUser());
+    }
+
     public String getName(int row_id) {
         ODataRow row = browse(row_id);
         if (row != null) {
@@ -1195,5 +1201,17 @@ public class OModel implements ISyncServiceListener {
 
     public SyncUtils sync() {
         return SyncUtils.get(mContext);
+    }
+
+    public void browseLive(int server_id, Loader.OnLoadCompleteListener<List<ODataRow>> listener) {
+        ODomain domain = new ODomain();
+        domain.add("id", "=", server_id);
+
+        OLiveRecordLoader loader = new OLiveRecordLoader(mContext, this)
+                .setDomain(domain)
+                .setLimit(1);
+
+        loader.registerListener(0, listener);
+        loader.forceLoad();
     }
 }

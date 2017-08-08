@@ -438,7 +438,10 @@ public class OSelectionField extends LinearLayout implements IOControlData,
                         row = new ODataRow();
                     }
                 } else {
-                    if (!(mValue instanceof Boolean) && mValue != null && !mValue.toString().equals("false")) {
+                    if (mValue instanceof List && ((List) mValue).size() == 2) {
+                        row = new ODataRow();
+                        row.put(mModel.getDefaultNameColumn(), ((List) mValue).get(1));
+                    } else if (!(mValue instanceof Boolean) && mValue != null && !mValue.toString().equals("false")) {
                         int row_id = (Integer) mValue;
                         row = getRecordData(row_id);
                     } else {
