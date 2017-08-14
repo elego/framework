@@ -88,6 +88,7 @@ public class OModel implements ISyncServiceListener {
     private HashMap<String, Field> mDeclaredFields = new HashMap<>();
     private OdooVersion mOdooVersion = null;
     private String default_name_column = "name";
+    private String default_barcode_column = null;
     private boolean hasMailChatter = false;
 
     // Base Columns
@@ -155,6 +156,14 @@ public class OModel implements ISyncServiceListener {
 
     public String getDefaultNameColumn() {
         return default_name_column;
+    }
+
+    public void setDefaultBarcodeColumn(String barcodeColumn) {
+        default_barcode_column = barcodeColumn;
+    }
+
+    public String getDefaultBarcodeColumn() {
+        return default_barcode_column;
     }
 
     public OModel setModelName(String model_name) {
