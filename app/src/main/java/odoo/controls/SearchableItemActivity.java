@@ -237,11 +237,11 @@ public class SearchableItemActivity extends ActionBarActivity implements
             try {
                 ServerDataHelper helper = mRelModel.getServerDataHelper();
                 ODomain domain = new ODomain();
-                domain.add(mRelModel.getDefaultNameColumn(), "ilike", params[0]);
                 if (mRelModel.getDefaultBarcodeColumn() != null) {
                     domain.add("|");
                     domain.add(mRelModel.getDefaultBarcodeColumn(), "ilike", params[0]);
                 }
+                domain.add(mRelModel.getDefaultNameColumn(), "ilike", params[0]);
                 domain.append(liveDomain);
                 return helper.searchRecords(new OdooFields(mRelModel.getColumns()), domain, 10);
             } catch (Exception e) {
