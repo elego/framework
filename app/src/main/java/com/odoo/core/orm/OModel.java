@@ -203,6 +203,14 @@ public class OModel implements ISyncServiceListener {
         return mRelationColumns;
     }
 
+    public List<String> getRelationColumnNames() {
+        List<String> result = new ArrayList<>();
+        for (OColumn column : getRelationColumns()) {
+            result.add(column.getName());
+        }
+        return result;
+    }
+
     public OColumn getColumn(String column_name) {
         if (mDeclaredFields.size() <= 0)
             prepareFields();
@@ -1204,12 +1212,53 @@ public class OModel implements ISyncServiceListener {
     }
 
     public void browseLive(int server_id, Loader.OnLoadCompleteListener<List<ODataRow>> listener) {
+        browseLive(server_id, listener, null);
+    }
+
+    public void browseLive(int server_id, Loader.OnLoadCompleteListener<List<ODataRow>> listener,
+            boolean loadAllRelations) {
+        List<String> relationColumns = null;
+        if (loadAllRelations) {
+            relationColumns = getRelationColumnNames();
+        }
+        browseLive(server_id, listener, relationColumns);
+    }
+
+    public void browseLive(int server_id, Loader.OnLoadCompleteListener<List<ODataRow>> listener,
+            List<String> relationColumns) {
         ODomain domain = new ODomain();
         domain.add("id", "=", server_id);
 
         OLiveRecordLoader loader = new OLiveRecordLoader(mContext, this)
                 .setDomain(domain)
+                .setRelationsToLoad(relationColumns)
                 .setLimit(1);
+
+        loader.registerListener(0, listener);
+        loader.forceLoad();
+    }
+
+    public void browseLive(ArrayList<Integer> server_ids, Loader.OnLoadCompleteListener<List<ODataRow>> listener) {
+        browseLive(server_ids, listener, null);
+    }
+
+    public void browseLive(ArrayList<Integer> server_ids, Loader.OnLoadCompleteListener<List<ODataRow>> listener,
+            boolean loadAllRelations) {
+        List<String> relationColumns = null;
+        if (loadAllRelations) {
+            relationColumns = getRelationColumnNames();
+        }
+        browseLive(server_ids, listener, relationColumns);
+    }
+
+    public void browseLive(ArrayList<Integer> server_ids, Loader.OnLoadCompleteListener<List<ODataRow>> listener,
+            List<String> relationColumns) {
+        ODomain domain = new ODomain();
+        domain.add("id", "in", server_ids);
+
+        OLiveRecordLoader loader = new OLiveRecordLoader(mContext, this)
+                .setDomain(domain)
+                .setRelationsToLoad(relationColumns);
 
         loader.registerListener(0, listener);
         loader.forceLoad();
