@@ -51,6 +51,7 @@ public class OEditTextField extends LinearLayout implements IOControlData,
     private int appearance = -1;
     private int textColor = Color.BLACK;
     private int inputtype = -1;
+    private String parsePattern = null;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public OEditTextField(Context context, AttributeSet attrs,
@@ -142,6 +143,8 @@ public class OEditTextField extends LinearLayout implements IOControlData,
             value = ODateUtils.floatToDuration(value.toString());
         } else if (value instanceof Barcode) {
             value = ((Barcode) value).rawValue;
+        } else if (parsePattern != null && (value instanceof Float || value instanceof Double)) {
+            value = String.format(parsePattern, value);
         }
         if (isEditable()) {
             edtText.setText(value.toString());
@@ -264,5 +267,15 @@ public class OEditTextField extends LinearLayout implements IOControlData,
         this.textSize = textSize;
         this.appearance = appearance;
         this.textColor = color;
+    }
+
+    public void setParsePattern(String parsePattern) {
+        if (parsePattern != null) {
+            this.parsePattern = parsePattern;
+        }
+    }
+
+    public String getParsePattern() {
+        return parsePattern;
     }
 }

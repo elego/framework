@@ -548,6 +548,7 @@ public class OField extends LinearLayout implements IOControlData.ValueUpdateLis
     private View initFloatControl() {
         OEditTextField edt = (OEditTextField) initTextControl();
         edt.setInputType(EditorInfo.TYPE_CLASS_NUMBER | EditorInfo.TYPE_NUMBER_FLAG_DECIMAL);
+        edt.setParsePattern(mParsePattern);
         return edt;
     }
 
