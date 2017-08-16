@@ -114,7 +114,11 @@ public class SearchableItemActivity extends ActionBarActivity implements
                         formData = extra.getBundle("form_data");
                         liveDomain = mCol.getDomainFilterParser(mModel).getRPCDomain(formData);
                     }
-                    objects.addAll(OSelectionField.getRecordItems(mRelModel, mCol, formData));
+                    List<ODataRow> recordItems = OSelectionField.getRecordItems(mRelModel, mCol, formData);
+                    if (mLiveSearch) {
+                        recordItems.remove(0);
+                    }
+                    objects.addAll(recordItems);
                 }
             }
 
@@ -144,6 +148,7 @@ public class SearchableItemActivity extends ActionBarActivity implements
             };
             if (mLiveSearch) {
                 mAdapter.setOnSearchChange(this);
+                onSearchChange(new ArrayList<>());
             }
             mList.setAdapter(mAdapter);
         } else {
@@ -155,11 +160,11 @@ public class SearchableItemActivity extends ActionBarActivity implements
     public void onItemClick(AdapterView<?> parent, View view, int position,
                             long id) {
         ODataRow data = (ODataRow) objects.get(position);
-        if (!data.contains(OColumn.ROW_ID)) {
+        if ((mLiveSearch && data.contains("id")) || data.contains(OColumn.ROW_ID)) {
+            onRecordCreated(data);
+        } else {
             QuickCreateRecordProcess quickCreateRecordProcess = new QuickCreateRecordProcess(this);
             quickCreateRecordProcess.execute(data);
-        } else {
-            onRecordCreated(data);
         }
     }
 
@@ -170,8 +175,14 @@ public class SearchableItemActivity extends ActionBarActivity implements
         if (extra.containsKey("column_name"))
             intent.putExtra("column_name", extra.getString("column_name"));
         intent.putExtra("selected_position", row.getInt(OColumn.ROW_ID));
-        if (mRowId != null) {
+        if (mRowId != null && mRowId != -1) {
             intent.putExtra("record_id", true);
+        } else if (mLiveSearch && row.contains("id")) {
+            String recordData[] = {
+                String.valueOf(row.get("id")),
+                row.getString(mRelModel.getDefaultNameColumn())
+            };
+            intent.putExtra("record_data", recordData);
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         finish();
@@ -214,7 +225,7 @@ public class SearchableItemActivity extends ActionBarActivity implements
         if (newRecords.size() <= 0) {
             if (mLiveDataLoader != null)
                 mLiveDataLoader.cancel(true);
-            if (edt_searchable_input.getText().length() >= 3) {
+            if (edt_searchable_input.getText().length() >= 0) {
                 mLiveDataLoader = new LiveSearch();
                 mLiveDataLoader.execute(edt_searchable_input.getText()
                         .toString());

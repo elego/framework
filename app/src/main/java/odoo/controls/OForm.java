@@ -226,8 +226,9 @@ public class OForm extends LinearLayout {
         OValues values = getValues(false);
         if (mRecord != null && values != null) {
             for (String key : values.keys()) {
-                if (values.get(key).toString().equals("false") &&
-                        !mRecord.get(key).toString().equals("false")) {
+                if (values.get(key) != null && mRecord.get(key) != null
+                        && values.get(key).toString().equals("false")
+                        && !mRecord.get(key).toString().equals("false")) {
                     values.put(key, mRecord.get(key));
                 }
             }

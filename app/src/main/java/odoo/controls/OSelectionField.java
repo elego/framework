@@ -55,6 +55,7 @@ import com.odoo.core.orm.fields.types.OSelection;
 import com.odoo.core.utils.OControls;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -368,6 +369,14 @@ public class OSelectionField extends LinearLayout implements IOControlData,
                                 row = ((OM2ORecord) mValue).browse();
                             else if (mValue instanceof Integer)
                                 row = getRecordData((Integer) mValue);
+                            else if (mValue instanceof List) {
+                                row = new ODataRow();
+                                row.put(mRelModel.getDefaultNameColumn(), ((List) mValue).get(1));
+                            } else if (mValue instanceof ODataRow) {
+                                row = new ODataRow();
+                                row.put(mRelModel.getDefaultNameColumn(),
+                                        ((ODataRow) mValue).getString(mRelModel.getDefaultNameColumn()));
+                            }
                             else if (mValue instanceof Barcode) {
                                 String barcode = ((Barcode) mValue).rawValue;
                                 String selection = mBarcodeColumn + " = ?";
@@ -440,18 +449,23 @@ public class OSelectionField extends LinearLayout implements IOControlData,
                 } else {
                     if (mValue instanceof List && ((List) mValue).size() == 2) {
                         row = new ODataRow();
-                        row.put(mModel.getDefaultNameColumn(), ((List) mValue).get(1));
+                        row.put(mRelModel.getDefaultNameColumn(), ((List) mValue).get(1));
+                    } else if (mValue instanceof ODataRow) {
+                        row = new ODataRow();
+                        row.put(mRelModel.getDefaultNameColumn(),
+                                ((ODataRow) mValue).getString(mRelModel.getDefaultNameColumn()));
                     } else if (!(mValue instanceof Boolean) && mValue != null && !mValue.toString().equals("false")) {
                         int row_id = (Integer) mValue;
                         row = getRecordData(row_id);
                     } else {
                         row = new ODataRow();
-                        row.put(mModel.getDefaultNameColumn(), "No " + mCol.getLabel() + " selected");
+                        row.put(mRelModel.getDefaultNameColumn(), "No " + mCol.getLabel() + " selected");
                     }
                 }
             }
-            if (!row.getString(mRelModel.getDefaultNameColumn()).equals("false"))
+            if (!row.getString(mRelModel.getDefaultNameColumn()).equals("false")) {
                 txvView.setText(row.getString(mRelModel.getDefaultNameColumn()));
+            }
         }
         if (isEditable() && mValueUpdateListener != null) {
             if (mValue instanceof Integer && (int) mValue == -1) return;
@@ -628,7 +642,13 @@ public class OSelectionField extends LinearLayout implements IOControlData,
         @Override
         public void onReceive(Context context, Intent intent) {
             if (mCol.getName().equals(intent.getStringExtra("column_name"))) {
-                setValue(intent.getIntExtra("selected_position", -1));
+                Bundle extras = intent.getExtras();
+                String[] recordArray = extras.getStringArray("record_data");
+                if (recordArray  != null) {
+                    setValue(new ArrayList<>(Arrays.asList(recordArray)));
+                } else {
+                    setValue(intent.getIntExtra("selected_position", -1));
+                }
                 LocalBroadcastManager.getInstance(mContext).unregisterReceiver(valueReceiver);
             }
         }
